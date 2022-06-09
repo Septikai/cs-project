@@ -31,7 +31,16 @@ namespace Project
         /// </summary>
         private void InitializeComponent()
         {
+            this.movementTimer = new System.Timers.Timer();
+            ((System.ComponentModel.ISupportInitialize) (this.movementTimer)).BeginInit();
             this.SuspendLayout();
+            // 
+            // movementTimer
+            // 
+            this.movementTimer.Enabled = true;
+            this.movementTimer.Interval = 10D;
+            this.movementTimer.SynchronizingObject = this;
+            this.movementTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.MovementTimerElapsed);
             // 
             // BaseForm
             // 
@@ -44,10 +53,15 @@ namespace Project
             this.Name = "BaseForm";
             this.Text = "BaseForm";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.BaseForm_FormClosed);
-            this.Resize += new System.EventHandler(this.BaseForm_Resize);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.OnFormClose);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnFormKeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.OnFormKeyUp);
+            this.Resize += new System.EventHandler(this.OnFormResize);
+            ((System.ComponentModel.ISupportInitialize) (this.movementTimer)).EndInit();
             this.ResumeLayout(false);
         }
+
+        private System.Timers.Timer movementTimer;
 
         #endregion
     }

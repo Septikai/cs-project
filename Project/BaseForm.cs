@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using System.Windows.Forms;
 using Project.Dungeon;
+using Project.Dungeon.Entities;
 using Project.Menu;
+using Project.Util;
 using static System.Windows.Forms.Application;
 
 namespace Project
@@ -10,9 +13,11 @@ namespace Project
     public partial class BaseForm : Form
     {
         private static BaseForm _instance;
-        private static readonly List<PictureBox> ViewList = new List<PictureBox>();
-        public static readonly Main MainMenuInstance = Main.GetInstance();
+        private static readonly List<View> ViewList = new List<View>();
+        private static readonly Main MainMenuInstance = Main.GetInstance();
         public static readonly RoomView RoomViewInstance = RoomView.GetInstance();
+        private static readonly GameTracker GameTrackerInstance = GameTracker.GetInstance();
+        private static View _currentView;
         
         private BaseForm()
         {
@@ -35,6 +40,8 @@ namespace Project
             ViewList.Add(MainMenuInstance);
             this.Controls.Add(RoomViewInstance);
             ViewList.Add(RoomViewInstance);
+            
+            _currentView = MainMenuInstance;
         }
 
         private void InitialiseComponents()
@@ -71,16 +78,52 @@ namespace Project
             }
         }
 
-        private void BaseForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void OnFormClose(object sender, FormClosedEventArgs e)
         {
             // Exit the program when the form is closed to prevent it running in the background
             Exit();
         }
 
-        private void BaseForm_Resize(object sender, EventArgs e)
+        private void OnFormResize(object sender, EventArgs e)
         {
             // If the form is resized, resize the components on it.
             this.SetComponentSizes();
+        }
+
+        private void OnFormKeyDown(object sender, KeyEventArgs e)
+        {
+            GameTrackerInstance.AddHeldKey(e.KeyData);
+        }
+
+        private void OnFormKeyUp(object sender, KeyEventArgs e)
+        {
+            GameTrackerInstance.RemoveHeldKey(e.KeyData);
+        }
+
+        private void MovementTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (GameTrackerInstance.IsPaused()) return;
+            var yVel = 0;
+            var xVel = 0;
+            
+            if (GameTrackerInstance.GetHeldKeys().Contains(Keys.W))
+            {
+                yVel--;
+            }
+            if (GameTrackerInstance.GetHeldKeys().Contains(Keys.A))
+            {
+                xVel--;
+            }
+            if (GameTrackerInstance.GetHeldKeys().Contains(Keys.S))
+            {
+                yVel++;
+            }
+            if (GameTrackerInstance.GetHeldKeys().Contains(Keys.D))
+            {
+                xVel++;
+            }
+
+            Player.GetInstance().MoveEntity(xVel, yVel);
         }
     }
 }

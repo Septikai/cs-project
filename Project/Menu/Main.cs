@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.Windows.Forms;
 using Project.Dungeon;
 
 namespace Project.Menu
 {
-    public class Main : PictureBox
+    public class Main : View
     {
         private static readonly Main Instance = new Main();
         private bool _initialised = false;
@@ -52,7 +51,7 @@ namespace Project.Menu
             this.SetComponents();
         }
 
-        private void SetComponents()
+        protected override void SetComponents()
         {
             // Set the sizes and locations of the components of the Main menu
             
@@ -95,12 +94,6 @@ namespace Project.Menu
         {
             // Close the form, which in turn Exits the program
             this.FindForm()?.Close();
-        }
-
-        public void ResizeComponents()
-        {
-            // Update component sizes and locations when the Main menu is resized
-            this.SetComponents();
         }
     }
 }

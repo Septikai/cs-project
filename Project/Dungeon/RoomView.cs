@@ -3,7 +3,7 @@ using Project.Dungeon.Rooms;
 
 namespace Project.Dungeon
 {
-    public class RoomView : PictureBox
+    public class RoomView : View
     {
         private static readonly RoomView Instance = new RoomView();
         private Room _room;
@@ -33,19 +33,13 @@ namespace Project.Dungeon
             this.SetComponents();
         }
 
-        private void SetComponents()
+        protected override void SetComponents()
         {
             // If there is a room on the RoomView, scale it to the screen size
             if (this._room != null) {
                 this._room.Size = this.Size;
                 this._room.SetComponents();
             }
-        }
-
-        public void ResizeComponents()
-        {
-            // Update component sizes and locations when the BaseForm is resized
-            this.SetComponents();
         }
     }
 }

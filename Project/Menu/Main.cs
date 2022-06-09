@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Project.Dungeon;
 
 namespace Project.Menu
 {
@@ -75,7 +76,7 @@ namespace Project.Menu
         private void NewGame(object sender, EventArgs e)
         {
             // Start a new game
-            throw new NotImplementedException();
+            DungeonManager.GetInstance().NewGame();
         }
 
         private void LoadGame(object sender, EventArgs e)

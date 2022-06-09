@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Drawing;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using Project.Dungeon;
 using Project.Menu;
 using static System.Windows.Forms.Application;
 
@@ -8,9 +9,12 @@ namespace Project
 {
     public partial class BaseForm : Form
     {
-        private static readonly Main MainMenuInstance = Main.GetInstance();
+        private static BaseForm _instance;
+        private static readonly List<PictureBox> ViewList = new List<PictureBox>();
+        public static readonly Main MainMenuInstance = Main.GetInstance();
+        public static readonly RoomView RoomViewInstance = RoomView.GetInstance();
         
-        public BaseForm()
+        private BaseForm()
         {
             // The BaseForm constructor.
             // This does the initial setup for the form
@@ -19,10 +23,18 @@ namespace Project
             this.InitialiseComponents();
         }
 
+        public static BaseForm GetInstance()
+        {
+            return _instance ?? (_instance = new BaseForm());
+        }
+
         private void AddComponents()
         {
             // Adds the controls to the form
             this.Controls.Add(MainMenuInstance);
+            ViewList.Add(MainMenuInstance);
+            this.Controls.Add(RoomViewInstance);
+            ViewList.Add(RoomViewInstance);
         }
 
         private void InitialiseComponents()
@@ -31,6 +43,7 @@ namespace Project
             this.SetComponentSizes();
             
             MainMenuInstance.Initialise();
+            // RoomViewInstance.Initialise();
         }
 
         private  void SetComponentSizes()
@@ -38,6 +51,24 @@ namespace Project
             // Set the components to the correct sizes
             MainMenuInstance.Size = this.Size;
             MainMenuInstance.ResizeComponents();
+            RoomViewInstance.Size = this.Size;
+            RoomViewInstance.ResizeComponents();
+        }
+
+        public void SwitchView(PictureBox view)
+        {
+            // Change the view which is currently displayed
+            foreach (var v in ViewList)
+            {
+                if (v.GetType() != view.GetType())
+                {
+                    v.Hide();
+                }
+                else
+                {
+                    v.Show();
+                }
+            }
         }
 
         private void BaseForm_FormClosed(object sender, FormClosedEventArgs e)

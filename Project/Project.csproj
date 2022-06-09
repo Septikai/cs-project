@@ -48,11 +48,17 @@
     <ItemGroup>
         <Compile Include="BaseForm.cs" />
         <Compile Include="BaseForm.Designer.cs" />
+        <Compile Include="Dungeon\DungeonManager.cs" />
+        <Compile Include="Dungeon\Entities\Entity.cs" />
+        <Compile Include="Dungeon\Entities\Player.cs" />
+        <Compile Include="Dungeon\Rooms\Room.cs" />
+        <Compile Include="Dungeon\RoomView.cs" />
         <Compile Include="Menu\Main.cs" />
         <Compile Include="Menu\MenuButton.cs" />
         <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Util\Direction.cs" />
         <EmbeddedResource Include="BaseForm.resx" />
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>

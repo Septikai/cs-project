@@ -12,11 +12,13 @@
 
         public static PlayerStats GetInstance()
         {
+            // Get the PlayerStats instance
             return Instance;
         }
 
         public int GetSpeed()
         {
+            // Get the player speed
             return this._speed;
         }
     }

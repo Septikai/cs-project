@@ -19,6 +19,8 @@ namespace Project.Dungeon.Entities
 
         public bool MoveEntity(int xVel, int yVel)
         {
+            // Method name is self explanatory
+            // Takes an X velocity and a Y velocity, each are either 0 or pos/negative 1, and moves in that direction
             this.Left += xVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
             var validMoveX = CheckX(xVel);
 
@@ -29,6 +31,7 @@ namespace Project.Dungeon.Entities
 
         private bool CheckX(int xVel)
         {
+            // Will be used to check for collisions in the X direction
             if (xVel == 0) return true;
             
             return true;
@@ -36,6 +39,7 @@ namespace Project.Dungeon.Entities
 
         private bool CheckY(int yVel)
         {
+            // Will be used to check for collisions in the Y direction
             if (yVel == 0) return true;
             
             return true;

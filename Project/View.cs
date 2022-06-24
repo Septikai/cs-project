@@ -6,9 +6,10 @@ namespace Project
     {
         protected View()
         {
-            
+            // Create a View
         }
 
+        // There must be a SetComponents method in every View
         protected abstract void SetComponents();
 
         public void ResizeComponents()

@@ -22,26 +22,32 @@ namespace Project.Util
 
         public void SetPaused(bool isPaused)
         {
+            // Pause of un-pause the game
             this._paused = isPaused;
         }
 
         public bool IsPaused()
         {
+            // Check if the game is paused
             return this._paused;
         }
 
         public void AddHeldKey(Keys key)
         {
+            // Add a key to the list of held keys
             this._heldKeys.Add(key);
         }
 
         public void RemoveHeldKey(Keys key)
         {
+            // Remove all of a key from the list of held keys
+            // Removes all in case of a key appearing multiple times
             this._heldKeys.RemoveAll(k => k == key);
         }
 
         public List<Keys> GetHeldKeys()
         {
+            // Fetch the list of held keys
             return this._heldKeys;
         }
     }

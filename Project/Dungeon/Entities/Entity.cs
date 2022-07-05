@@ -28,6 +28,7 @@ namespace Project.Dungeon.Entities
 
             this.Top += yVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
             var validMoveY = CheckY(yVel, blockers);
+            BaseForm.RoomViewInstance.GetRoom().Invalidate();
             return validMoveX && validMoveY;
         }
 

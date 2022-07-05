@@ -33,7 +33,7 @@ namespace Project.Menu
         private void InitialiseComponents()
         {
             // Create and setup the components of the Main menu
-            
+            //
             // Using the MenuButton class, I can pass in the methods to be ran when clicked
             this._newGameButton = new MenuButton("_newGameButton", "Start New Game", NewGame);
             this._loadGameButton = new MenuButton("_loadGameButton", "Load Game", LoadGame);

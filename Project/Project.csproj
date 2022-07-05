@@ -48,6 +48,8 @@
     <ItemGroup>
         <Compile Include="BaseForm.cs" />
         <Compile Include="BaseForm.Designer.cs" />
+        <Compile Include="Dungeon\Blockers\Blocker.cs" />
+        <Compile Include="Dungeon\Blockers\Wall.cs" />
         <Compile Include="Dungeon\DungeonManager.cs" />
         <Compile Include="Dungeon\Entities\Entity.cs" />
         <Compile Include="Dungeon\Entities\Player.cs" />

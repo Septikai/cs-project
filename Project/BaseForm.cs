@@ -134,7 +134,7 @@ namespace Project
             }
 
             // Move in the direction of the resulting velocities
-            Player.GetInstance().MoveEntity(xVel, yVel);
+            Player.GetInstance().MoveEntity(xVel, yVel, BaseForm.RoomViewInstance.GetRoom().GetBlockers());
         }
     }
 }

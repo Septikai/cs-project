@@ -20,6 +20,12 @@ namespace Project.Dungeon
             return Instance;
         }
 
+        public Room GetRoom()
+        {
+            // Fetch the currently held room
+            return this._room;
+        }
+
         public void SetRoom(Room room)
         {
             // Change the room currently displayed by the RoomView

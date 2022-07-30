@@ -34,6 +34,7 @@ namespace Project.Dungeon
             if (this.Controls.Count > 0) this.Controls.Clear();
             // Add and display the new room
             this._room = room;
+            if (this._room == null) return;
             this.Controls.Add(this._room);
             this._room.Show();
             this.SetComponents();

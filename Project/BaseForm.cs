@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Timers;
 using System.Windows.Forms;
 using Project.Dungeon;
@@ -15,9 +16,11 @@ namespace Project
         private static BaseForm _instance;
         private static readonly List<View> ViewList = new List<View>();
         private static readonly Main MainMenuInstance = Main.GetInstance();
+        private static readonly Pause PauseMenuInstance = Pause.GetInstance();
         public static readonly RoomView RoomViewInstance = RoomView.GetInstance();
         private static readonly GameTracker GameTrackerInstance = GameTracker.GetInstance();
         private static View _currentView;
+        private static View _previousViewInstance;
         
         private BaseForm()
         {
@@ -40,6 +43,8 @@ namespace Project
             // Adds the controls to the form
             this.Controls.Add(MainMenuInstance);
             ViewList.Add(MainMenuInstance);
+            this.Controls.Add(PauseMenuInstance);
+            ViewList.Add(PauseMenuInstance);
             this.Controls.Add(RoomViewInstance);
             ViewList.Add(RoomViewInstance);
             
@@ -52,7 +57,7 @@ namespace Project
             this.SetComponentSizes();
             
             MainMenuInstance.Initialise();
-            // RoomViewInstance.Initialise();
+            PauseMenuInstance.Initialise();
         }
 
         private  void SetComponentSizes()
@@ -60,6 +65,8 @@ namespace Project
             // Set the components to the correct sizes
             MainMenuInstance.Size = this.Size;
             MainMenuInstance.ResizeComponents();
+            PauseMenuInstance.Size = this.Size;
+            PauseMenuInstance.ResizeComponents();
             RoomViewInstance.Size = this.Size;
             RoomViewInstance.ResizeComponents();
         }
@@ -67,17 +74,28 @@ namespace Project
         public void SwitchView(View view)
         {
             // Change the view which is currently displayed
+            //
+            // Set the previous view
+            _previousViewInstance = _currentView;
             foreach (var v in ViewList)
             {
+                // Show the required view
                 if (v.GetType() != view.GetType())
                 {
                     v.Hide();
                 }
                 else
                 {
+                    // Set the new current view
+                    _currentView = v;
                     v.Show();
                 }
             }
+        }
+        
+        public View GetPreviousView()
+        {
+            return _previousViewInstance;
         }
 
         private void OnFormClose(object sender, FormClosedEventArgs e)
@@ -135,6 +153,26 @@ namespace Project
 
             // Move in the direction of the resulting velocities
             Player.GetInstance().MoveEntity(xVel, yVel, BaseForm.RoomViewInstance.GetRoom().GetBlockers());
+        }
+
+        private void MiscTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            // Checks if the user presses escape while not in the main menu
+            if (_currentView.GetType() != typeof(Main) && GameTrackerInstance.GetHeldKeys().Contains(Keys.Escape) &&
+                !GameTrackerInstance.PauseKeyHeld())
+            {
+                // If you are paused, resume the game, if you are not paused, pause the game
+                if (GameTrackerInstance.IsPaused())
+                {
+                    GameTrackerInstance.SetPaused(false);
+                    this.SwitchView(_previousViewInstance);
+                }
+                else
+                {
+                    GameTrackerInstance.SetPaused(true);
+                    this.SwitchView(PauseMenuInstance);
+                }
+            }
         }
     }
 }

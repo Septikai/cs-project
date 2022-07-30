@@ -41,10 +41,10 @@ namespace Project.Menu
             this._quitButton = new MenuButton("_quitButton", "Quit Game", Quit);
             
             // Add the components to the Main menu and set their sizes
-            this.Controls.Add(_newGameButton);
-            this.Controls.Add(_loadGameButton);
-            this.Controls.Add(_settingsButton);
-            this.Controls.Add(_quitButton);
+            this.Controls.Add(this._newGameButton);
+            this.Controls.Add(this._loadGameButton);
+            this.Controls.Add(this._settingsButton);
+            this.Controls.Add(this._quitButton);
 
             this._initialised = true;
 

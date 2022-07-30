@@ -27,9 +27,15 @@ namespace Project.Dungeon
             this._currentRoom = new Room(Direction.Centre);
             RoomView.GetInstance().SetRoom(this._currentRoom);
             BaseForm.GetInstance().SwitchView(BaseForm.RoomViewInstance);
-            GameTracker.GetInstance().SetPaused(false);
+            GameTracker.GetInstance().SetPaused(false, false);
             // Finally, setup the starting room
             this._currentRoom.EnterRoom();
+        }
+
+        public Room GetCurrentRoom()
+        {
+            // Fetch the current Room
+            return _currentRoom;
         }
     }
 }

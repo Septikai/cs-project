@@ -57,6 +57,7 @@
         <Compile Include="Dungeon\RoomView.cs" />
         <Compile Include="Menu\Main.cs" />
         <Compile Include="Menu\MenuButton.cs" />
+        <Compile Include="Menu\Pause.cs" />
         <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

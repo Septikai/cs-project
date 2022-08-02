@@ -11,6 +11,7 @@ namespace Project.Menu
             this.Name = name;
             this.SetText(displayText);
             this.Click += new EventHandler(onClickMethod);
+            this.TabStop = false;
         }
 
         private void SetText(string text)

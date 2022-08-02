@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using Project.Dungeon;
+using Project.Dungeon.Dungeons;
 using Project.Util;
 
 namespace Project.Menu
@@ -68,6 +70,8 @@ namespace Project.Menu
 
         private void ResumeGame(object sender, EventArgs e)
         {
+            // Check that the pause menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Unpause the game
             GameTracker.GetInstance().SetPaused(false, false);
             BaseForm.GetInstance().SwitchView(BaseForm.GetInstance().GetPreviousView());
@@ -75,14 +79,18 @@ namespace Project.Menu
 
         private void SaveGame(object sender, EventArgs e)
         {
+            // Check that the pause menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Save the game
             throw new NotImplementedException();
         }
 
         private void ReturnToMenu(object sender, EventArgs e)
         {
+            // Check that the pause menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Return to the Main menu
-            BaseForm.RoomViewInstance.SetRoom(null);
+            DungeonManager.GetInstance().SelectDungeon(DungeonId.NullDungeon);
             BaseForm.GetInstance().SwitchView(Main.GetInstance());
         }
     }

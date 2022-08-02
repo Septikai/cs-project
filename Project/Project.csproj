@@ -48,11 +48,17 @@
     <ItemGroup>
         <Compile Include="BaseForm.cs" />
         <Compile Include="BaseForm.Designer.cs" />
+        <Compile Include="Dungeon\Blockers\Door.cs" />
+        <Compile Include="Dungeon\Dungeons\Cavern.cs" />
+        <Compile Include="Dungeon\Dungeons\DungeonID.cs" />
+        <Compile Include="Dungeon\Dungeons\DungeonTemplate.cs" />
         <Compile Include="Dungeon\Blockers\Blocker.cs" />
         <Compile Include="Dungeon\Blockers\Wall.cs" />
         <Compile Include="Dungeon\DungeonManager.cs" />
         <Compile Include="Dungeon\Entities\Entity.cs" />
         <Compile Include="Dungeon\Entities\Player.cs" />
+        <Compile Include="Dungeon\FloorCoordinate.cs" />
+        <Compile Include="Dungeon\RoomData.cs" />
         <Compile Include="Dungeon\Rooms\Room.cs" />
         <Compile Include="Dungeon\RoomView.cs" />
         <Compile Include="Menu\Main.cs" />

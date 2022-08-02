@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Forms;
 using Project.Dungeon.Blockers;
+using Project.Dungeon.Rooms;
 using Project.Util;
 
 namespace Project.Dungeon.Entities
@@ -19,17 +20,34 @@ namespace Project.Dungeon.Entities
             this._speed = speed;
         }
 
-        public bool MoveEntity(int xVel, int yVel, List<Blocker> blockers)
+        public bool MoveEntity(int xVel, int yVel, Room room)
         {
             // Method name is self explanatory
             // Takes an X velocity and a Y velocity, each are either 0 or pos/negative 1, and moves in that direction
             this.Left += xVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
-            var validMoveX = CheckX(xVel, blockers);
+            var xDoorFound = CheckForDoor(room);
+            if (xDoorFound) return true;
+            var validMoveX = CheckX(xVel, room.GetBlockers());
 
             this.Top += yVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
-            var validMoveY = CheckY(yVel, blockers);
-            BaseForm.RoomViewInstance.GetRoom().Invalidate();
+            var yDoorFound = CheckForDoor(room);
+            if (yDoorFound) return true;
+            var validMoveY = CheckY(yVel, room.GetBlockers());
+            RoomView.GetInstance().GetRoom().Invalidate();
             return validMoveX && validMoveY;
+        }
+
+        private bool CheckForDoor(Room room)
+        {
+            var doors = room.GetDoors();
+            foreach (var door in doors)
+            {
+                if (!room.Controls.Contains(door) || !this.Bounds.IntersectsWith(door.Bounds)) continue;
+                door.Open();
+                return true;
+            }
+
+            return false;
         }
 
         private bool CheckX(int xVel, List<Blocker> blockers)

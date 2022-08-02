@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Timers;
 using System.Windows.Forms;
 using Project.Dungeon;
@@ -17,7 +16,7 @@ namespace Project
         private static readonly List<View> ViewList = new List<View>();
         private static readonly Main MainMenuInstance = Main.GetInstance();
         private static readonly Pause PauseMenuInstance = Pause.GetInstance();
-        public static readonly RoomView RoomViewInstance = RoomView.GetInstance();
+        private static readonly RoomView RoomViewInstance = RoomView.GetInstance();
         private static readonly GameTracker GameTrackerInstance = GameTracker.GetInstance();
         private static View _currentView;
         private static View _previousViewInstance;
@@ -60,7 +59,7 @@ namespace Project
             PauseMenuInstance.Initialise();
         }
 
-        private  void SetComponentSizes()
+        private void SetComponentSizes()
         {
             // Set the components to the correct sizes
             MainMenuInstance.Size = this.Size;
@@ -91,6 +90,11 @@ namespace Project
                     v.Show();
                 }
             }
+        }
+        
+        public View GetCurrentView()
+        {
+            return _currentView;
         }
         
         public View GetPreviousView()
@@ -152,7 +156,7 @@ namespace Project
             }
 
             // Move in the direction of the resulting velocities
-            Player.GetInstance().MoveEntity(xVel, yVel, BaseForm.RoomViewInstance.GetRoom().GetBlockers());
+            Player.GetInstance().MoveEntity(xVel, yVel, BaseForm.RoomViewInstance.GetRoom());
         }
 
         private void MiscTimerElapsed(object sender, ElapsedEventArgs e)

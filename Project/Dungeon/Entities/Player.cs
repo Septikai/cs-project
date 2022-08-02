@@ -2,27 +2,20 @@
 
 namespace Project.Dungeon.Entities
 {
-    public class Player : Entity
+    public sealed class Player : Entity
     {
         private static readonly Player Instance = new Player();
 
         private Player()
         {
             // Create the player
-            SetBackColour();
+            this.BackColor = Color.Blue;
         }
 
         public static Player GetInstance()
         {
             // Get the player instance
             return Instance;
-        }
-
-        private void SetBackColour()
-        {
-            // Setting the player colour to blue
-            // Done here because it is a virtual member
-            this.BackColor = Color.Blue;
         }
 
         public void SetDimensions(Size availableSpace)

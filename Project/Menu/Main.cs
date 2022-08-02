@@ -74,24 +74,32 @@ namespace Project.Menu
 
         private void NewGame(object sender, EventArgs e)
         {
+            // Check that the main menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Start a new game
             DungeonManager.GetInstance().NewGame();
         }
 
         private void LoadGame(object sender, EventArgs e)
         {
+            // Check that the main menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Load a saved game
             throw new NotImplementedException();
         }
 
         private void Settings(object sender, EventArgs e)
         {
+            // Check that the main menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // View and change game settings
             throw new NotImplementedException();
         }
 
         private void Quit(object sender, EventArgs e)
         {
+            // Check that the main menu is visible
+            if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Close the form, which in turn Exits the program
             this.FindForm()?.Close();
         }

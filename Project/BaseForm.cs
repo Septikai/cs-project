@@ -4,6 +4,7 @@ using System.Timers;
 using System.Windows.Forms;
 using Project.Dungeon;
 using Project.Dungeon.Entities;
+using Project.Dungeon.Map;
 using Project.Menu;
 using Project.Util;
 using static System.Windows.Forms.Application;
@@ -15,6 +16,7 @@ namespace Project
         private static BaseForm _instance;
         private static readonly List<View> ViewList = new List<View>();
         private static readonly Main MainMenuInstance = Main.GetInstance();
+        private static readonly ModeSelect ModeSelectInstance = ModeSelect.GetInstance();
         private static readonly Pause PauseMenuInstance = Pause.GetInstance();
         private static readonly RoomView RoomViewInstance = RoomView.GetInstance();
         private static readonly GameTracker GameTrackerInstance = GameTracker.GetInstance();
@@ -42,6 +44,8 @@ namespace Project
             // Adds the controls to the form
             this.Controls.Add(MainMenuInstance);
             ViewList.Add(MainMenuInstance);
+            this.Controls.Add(ModeSelectInstance);
+            ViewList.Add(ModeSelectInstance);
             this.Controls.Add(PauseMenuInstance);
             ViewList.Add(PauseMenuInstance);
             this.Controls.Add(RoomViewInstance);
@@ -56,6 +60,7 @@ namespace Project
             this.SetComponentSizes();
             
             MainMenuInstance.Initialise();
+            ModeSelectInstance.Initialise();
             PauseMenuInstance.Initialise();
         }
 
@@ -64,6 +69,8 @@ namespace Project
             // Set the components to the correct sizes
             MainMenuInstance.Size = this.Size;
             MainMenuInstance.ResizeComponents();
+            ModeSelectInstance.Size = this.Size;
+            ModeSelectInstance.ResizeComponents();
             PauseMenuInstance.Size = this.Size;
             PauseMenuInstance.ResizeComponents();
             RoomViewInstance.Size = this.Size;
@@ -134,6 +141,8 @@ namespace Project
             //
             // The player should not move if the game is paused
             if (GameTrackerInstance.IsPaused()) return;
+            // The player should not move if the map is open
+            if (MapBackground.GetInstance().Visible) return;
             var yVel = 0;
             var xVel = 0;
             
@@ -176,6 +185,16 @@ namespace Project
                     GameTrackerInstance.SetPaused(true);
                     this.SwitchView(PauseMenuInstance);
                 }
+            }
+            // Checks if the user is holding C and is in the RoomView
+            // If not and the map is visible, hide the map
+            if (_currentView is RoomView && GameTrackerInstance.GetHeldKeys().Contains(Keys.C))
+            {
+                if (!MapBackground.GetInstance().Visible) MapBackground.GetInstance().Show();
+            }
+            else if (MapBackground.GetInstance().Visible)
+            {
+                MapBackground.GetInstance().Hide();
             }
         }
     }

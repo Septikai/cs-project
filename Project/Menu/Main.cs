@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Drawing;
-using Project.Dungeon;
 
 namespace Project.Menu
 {
     public class Main : View
     {
         private static readonly Main Instance = new Main();
-        private bool _initialised = false;
+        private bool _initialised;
         private MenuButton _newGameButton;
         private MenuButton _loadGameButton;
         private MenuButton _settingsButton;
@@ -76,8 +75,8 @@ namespace Project.Menu
         {
             // Check that the main menu is visible
             if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
-            // Start a new game
-            DungeonManager.GetInstance().NewGame();
+            // Switch to the mode selector
+            BaseForm.GetInstance().SwitchView(ModeSelect.GetInstance());
         }
 
         private void LoadGame(object sender, EventArgs e)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Project.Dungeon.Blockers;
 using Project.Dungeon.Entities;
+using Project.Dungeon.Map;
 using Project.Util;
 
 namespace Project.Dungeon.Rooms
@@ -15,7 +16,7 @@ namespace Project.Dungeon.Rooms
         private readonly List<Wall> _walls = new List<Wall>();
         private readonly List<Door> _doors = new List<Door>();
         private int _smallerSize;
-        private List<Direction> _doorLocations = new List<Direction>();
+        private readonly List<Direction> _doorLocations = new List<Direction>();
 
         public Room(Direction entryDirection)
         {
@@ -26,6 +27,12 @@ namespace Project.Dungeon.Rooms
 
         private void InitialiseComponents()
         {
+            // The map should display over everything else
+            MapBackground.GetInstance().Size = new Size(this.Width * 8 / 10, this.Height * 8 / 10);
+            MapBackground.GetInstance().Location = new Point(this.Width * 1 / 10, this.Height * 1 / 10);
+            MapBackground.GetInstance().SetComponents();
+            MapBackground.GetInstance().Hide();
+            this.Controls.Add(MapBackground.GetInstance());
             // The player must be in the room
             this.Controls.Add(this._player);
             // Add and position the walls
@@ -92,6 +99,10 @@ namespace Project.Dungeon.Rooms
 
         public void SetComponents()
         {
+            // Resize the map and all components on it
+            MapBackground.GetInstance().Size = new Size(this.Width * 8 / 10, this.Height * 8 / 10);
+            MapBackground.GetInstance().Location = new Point(this.Width * 1 / 10, this.Height * 1 / 10);
+            MapBackground.GetInstance().SetComponents();
             // Setting the player size
             this._player.SetDimensions(this.Size);
             // Position the walls

@@ -11,6 +11,7 @@ namespace Project.Dungeon
         public readonly bool EastDoor;
         public readonly bool SouthDoor;
         public readonly bool WestDoor;
+        public readonly List<Direction> DoorLocations;
         public readonly Direction StaircaseDirection;
 
         public RoomData(List<Direction> doorLocations, Direction staircaseDirection = Direction.NullDirection)
@@ -19,6 +20,7 @@ namespace Project.Dungeon
             // It will have every field set to false
             if (doorLocations is null) return;
             // Set door locations
+            this.DoorLocations = doorLocations;
             foreach (var door in doorLocations)
             {
                 switch (door)

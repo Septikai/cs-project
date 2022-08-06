@@ -9,7 +9,7 @@ namespace Project.Menu
     public class Pause : View
     {
         private static readonly Pause Instance = new Pause();
-        private bool _initialised = false;
+        private bool _initialised;
         private MenuButton _resumeGameButton;
         private MenuButton _saveGameButton;
         private MenuButton _returnToMenuButton;

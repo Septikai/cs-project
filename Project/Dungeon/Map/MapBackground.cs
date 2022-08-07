@@ -78,7 +78,6 @@ namespace Project.Dungeon.Map
                     {
                         var room = new MapRoom(currentFloor[col][row]);
 
-
                         room.Size = new Size(this._availableArea / 9, this._availableArea / 9);
                         room.Location = new Point(
                             this._xBorder + this._availableArea * col / 9,

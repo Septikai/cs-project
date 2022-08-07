@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Project.Util;
 
@@ -22,6 +20,8 @@ namespace Project.Dungeon.Generation
         private readonly Random _random = new Random();
         private readonly List<List<RoomData>> _generatedFloor = new List<List<RoomData>>();
         private FloorCoordinate _generatedStartCoordinate;
+        private Dictionary<int, List<PossibleRoom>> _areas = new Dictionary<int, List<PossibleRoom>>();
+        private Dictionary<int, bool> _validAreas = new Dictionary<int, bool>();
 
         private DungeonGenerator()
         { 
@@ -109,13 +109,123 @@ namespace Project.Dungeon.Generation
 
         public List<List<RoomData>> GetNewFloor()
         {
-            // Fill the list of RoomPossibilities with new PossibleRooms
-            InitialiseFloorPossibilities();
-            // Generate a new floor
-            GenerateFloor();
+            // Loop until the generated floor has 15+ rooms
+            do
+            {
+                // Fill the list of RoomPossibilities with new PossibleRooms
+                InitialiseFloorPossibilities();
+                // Generate a new floor
+                GenerateFloor();
+            } while (!WalkThroughFloor());
             // Convert the result of the generation into usable floor
             ConvertDataToFloor();
             return this._generatedFloor;
+        }
+
+        private bool WalkThroughFloor()
+        {
+            // Clear the dictionary
+            this._areas.Clear();
+            var checkedRooms = new List<PossibleRoom>();
+            var currentIndex = 0;
+            // Loop over each room
+            foreach (var room in this._floorPossibilities)
+            {
+                // If the room has already been checked, skip this iteration
+                if (checkedRooms.Contains(room)) continue;
+                // If the room has no doors, add it to the list of checked rooms
+                // and skip the rest of this iteration
+                if (room.RoomChoice.PossibleRoomType == PossibleRoomType.Zero)
+                {
+                    checkedRooms.Add(room);
+                    continue;
+                }
+                // Create a stack of rooms to check
+                var toCheck = new Stack<PossibleRoom>();
+                PossibleRoom nextRoom;
+                // Add the current room to the stack
+                toCheck.Push(room);
+                do
+                {
+                    // Pop a room from the stack
+                    nextRoom = toCheck.Pop();
+                    // If the rooms has already been checked, skip this iteration
+                    if (checkedRooms.Contains(nextRoom)) continue;
+                    // Add the room to it's area in the dictionary, or a new one if
+                    // it's the first room in this area so far
+                    if (this._areas.Keys.Contains(currentIndex)) this._areas[currentIndex].Add(nextRoom);
+                    else this._areas[currentIndex] = new List<PossibleRoom>() {nextRoom};
+                    checkedRooms.Add(nextRoom);
+                    // Get this room's representation in RoomData
+                    var roomData = nextRoom.ToRoomData();
+                    PossibleRoom adjacentRoom;
+                    // If there is a door to the west, and the room to the west hasn't
+                    // been checked, push it to the stack of rooms to check
+                    if (roomData.WestDoor)
+                    {
+                        adjacentRoom = this._floorPossibilities.Find(r =>
+                            r.Location.GetX() == nextRoom.Location.GetX() - 1 &&
+                            r.Location.GetY() == nextRoom.Location.GetY());
+                        if (adjacentRoom != null)
+                        {
+                            if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
+                        }
+                    }
+                    // If there is a door to the south, and the room to the west hasn't
+                    // been checked, push it to the stack of rooms to check
+                    if (roomData.SouthDoor)
+                    {
+                        adjacentRoom = this._floorPossibilities.Find(r =>
+                            r.Location.GetX() == nextRoom.Location.GetX() &&
+                            r.Location.GetY() == nextRoom.Location.GetY() + 1);
+                        if (adjacentRoom != null)
+                        {
+                            if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
+                        }
+                    }
+                    // If there is a door to the east, and the room to the west hasn't
+                    // been checked, push it to the stack of rooms to check
+                    if (roomData.EastDoor)
+                    {
+                        adjacentRoom = this._floorPossibilities.Find(r =>
+                            r.Location.GetX() == nextRoom.Location.GetX() + 1 &&
+                            r.Location.GetY() == nextRoom.Location.GetY());
+                        if (adjacentRoom != null)
+                        {
+                            if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
+                        }
+                    }
+                    // If there is a door to the north, and the room to the west hasn't
+                    // been checked, push it to the stack of rooms to check
+                    if (roomData.NorthDoor)
+                    {
+                        adjacentRoom = this._floorPossibilities.Find(r =>
+                            r.Location.GetX() == nextRoom.Location.GetX() &&
+                            r.Location.GetY() == nextRoom.Location.GetY() - 1);
+                        if (adjacentRoom != null)
+                        {
+                            if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
+                        }
+                    }
+                } while (toCheck.Count > 0);
+                // When all rooms in that area have been added to
+                // the dictionary, increment the current index
+                currentIndex++;
+            }
+
+            // Clear the dictionary
+            this._validAreas.Clear();
+            // Iterate once for each area
+            for (var k = 0; k < this._areas.Count; k++)
+            {
+                // If the area has 15 or more rooms in it, it is valid,
+                // otherwise, it is not valid
+                if (this._areas[k].Count >= 15) this._validAreas[k] = true;
+                else this._validAreas[k] = false;
+            }
+
+            // Return true if there are any valid areas
+            return this._validAreas.Any(kv => kv.Value);
         }
 
         private void InitialiseFloorPossibilities()
@@ -136,8 +246,6 @@ namespace Project.Dungeon.Generation
         {
             // Empty the list
             this._generatedFloor.Clear();
-            // Create a new list to all possible start coordinate
-            var possibleStartCoordinates = new List<FloorCoordinate>();
             for (var col = 0; col < 9; col++)
             {
                 this._generatedFloor.Add(new List<RoomData>());
@@ -149,16 +257,23 @@ namespace Project.Dungeon.Generation
                     var roomData = roomChoice.ToRoomData();
                     // Add the RoomData to it's position in the floor
                     this._generatedFloor[col].Add(roomData);
-                    // If there is an exit to the room, add it as a possible start location
-                    if (roomData.DoorLocations != null && roomData.DoorLocations.Count != 0)
-                    {
-                        possibleStartCoordinates.Add(new FloorCoordinate(col, row));
-                    }
                 }
             }
+
+            var possibleStartCoordinates = new List<FloorCoordinate>();
+            foreach (var kv in this._validAreas)
+            {
+                foreach (var room in this._areas[kv.Key])
+                {
+                    if (kv.Value == false)
+                        this._generatedFloor[room.Location.GetX()][room.Location.GetY()] = new RoomData(null);
+                    else
+                        possibleStartCoordinates.Add(new FloorCoordinate(room.Location.GetX(), room.Location.GetY()));
+                }
+            }
+            
             // Choose the start room from the list
-            this._generatedStartCoordinate =
-                possibleStartCoordinates[this._random.Next(possibleStartCoordinates.Count)];
+            this._generatedStartCoordinate = possibleStartCoordinates[this._random.Next(possibleStartCoordinates.Count)];
         }
 
         private void GenerateFloor()
@@ -419,7 +534,7 @@ namespace Project.Dungeon.Generation
             // Create a stack made up of all of the adjacent rooms
             var toPropagate = new Stack<Tuple<PossibleRoom, Direction>>();
             // If along the west edge of the map, do not check for the room to the west
-            if (room.Location.GetX() != 0)
+            if (room.Location.GetX() != 0 && originDir != Direction.West)
             {
                 // West Room
                 var nextRoom = this._floorPossibilities.Find(r =>
@@ -431,7 +546,7 @@ namespace Project.Dungeon.Generation
                 toPropagate.Push(nextRoomData);
             }
             // If along the south edge of the map, do not check for the room to the south
-            if (room.Location.GetY() != 8)
+            if (room.Location.GetY() != 8 && originDir != Direction.South)
             {
                 // South Room
                 var nextRoom = this._floorPossibilities.Find(r =>
@@ -443,7 +558,7 @@ namespace Project.Dungeon.Generation
                 toPropagate.Push(nextRoomData);
             }
             // If along the east edge of the map, do not check for the room to the east
-            if (room.Location.GetX() != 8)
+            if (room.Location.GetX() != 8 && originDir != Direction.East)
             {
                 // East Room
                 var nextRoom = this._floorPossibilities.Find(r =>
@@ -455,7 +570,7 @@ namespace Project.Dungeon.Generation
                 toPropagate.Push(nextRoomData);
             }
             // If along the north edge of the map, do not check for the room to the north
-            if (room.Location.GetY() != 0)
+            if (room.Location.GetY() != 0 && originDir != Direction.North)
             {
                 // North Room
                 var nextRoom = this._floorPossibilities.Find(r =>

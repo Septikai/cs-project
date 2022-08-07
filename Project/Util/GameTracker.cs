@@ -25,7 +25,13 @@ namespace Project.Util
         {
             // Pause or unpause the game
             this._paused = isPaused;
-            if (triggeredByKeyPress) this._pauseKeyHeld = true;
+            if (triggeredByKeyPress) SetPauseKeyHeld(true);
+        }
+
+        public void SetPauseKeyHeld(bool value)
+        {
+            // Set whether or not the pause key is being held
+            this._pauseKeyHeld = value;
         }
 
         public bool IsPaused()
@@ -51,7 +57,7 @@ namespace Project.Util
             // Remove all of a key from the list of held keys
             // Removes all in case of a key appearing multiple times
             this._heldKeys.RemoveAll(k => k == key);
-            if (key == Keys.Escape) this._pauseKeyHeld = false;
+            if (key == Keys.Escape) SetPauseKeyHeld(false);
         }
 
         public List<Keys> GetHeldKeys()

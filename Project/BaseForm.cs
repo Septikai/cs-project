@@ -143,6 +143,8 @@ namespace Project
             if (GameTrackerInstance.IsPaused()) return;
             // The player should not move if the map is open
             if (MapBackground.GetInstance().Visible) return;
+            // The player should not move unless in a room
+            if (_currentView.GetType() != typeof(RoomView)) return;
             var yVel = 0;
             var xVel = 0;
             
@@ -171,8 +173,8 @@ namespace Project
         private void MiscTimerElapsed(object sender, ElapsedEventArgs e)
         {
             // Checks if the user presses escape while not in the main menu
-            if (_currentView.GetType() != typeof(Main) && GameTrackerInstance.GetHeldKeys().Contains(Keys.Escape) &&
-                !GameTrackerInstance.PauseKeyHeld())
+            if (_currentView.GetType() != typeof(Main) && _currentView.GetType() != typeof(ModeSelect) &&
+                GameTrackerInstance.GetHeldKeys().Contains(Keys.Escape) && !GameTrackerInstance.PauseKeyHeld())
             {
                 // If you are paused, resume the game, if you are not paused, pause the game
                 if (GameTrackerInstance.IsPaused())
@@ -185,6 +187,14 @@ namespace Project
                     GameTrackerInstance.SetPaused(true);
                     this.SwitchView(PauseMenuInstance);
                 }
+            }
+            // Checks if the user presses escape while in the ModeSelect
+            else if (_currentView is ModeSelect && GameTrackerInstance.GetHeldKeys().Contains(Keys.Escape) &&
+                     !GameTrackerInstance.PauseKeyHeld())
+            {
+                // Return to the main menu
+                GameTrackerInstance.SetPauseKeyHeld(true);
+                this.SwitchView(MainMenuInstance);
             }
             // Checks if the user is holding C and is in the RoomView
             // If not and the map is visible, hide the map

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Project.Dungeon.Dungeons;
 using Project.Util;
 
 namespace Project.Dungeon.Generation
@@ -18,10 +20,14 @@ namespace Project.Dungeon.Generation
         private readonly List<PossibleRoomChoice> _southWallMatches = new List<PossibleRoomChoice>();
         private readonly List<PossibleRoomChoice> _westWallMatches = new List<PossibleRoomChoice>();
         private readonly Random _random = new Random();
-        private readonly List<List<RoomData>> _generatedFloor = new List<List<RoomData>>();
+        private readonly Dictionary<int, List<List<RoomData>>> _generatedDungeon = new Dictionary<int, List<List<RoomData>>>();
+        private int _currentFloorBatch = 0;
         private FloorCoordinate _generatedStartCoordinate;
-        private Dictionary<int, List<PossibleRoom>> _areas = new Dictionary<int, List<PossibleRoom>>();
-        private Dictionary<int, bool> _validAreas = new Dictionary<int, bool>();
+        private readonly Dictionary<int, Dictionary<int, List<PossibleRoom>>> _areas = new Dictionary<int, Dictionary<int, List<PossibleRoom>>>();
+        private readonly Dictionary<int, Dictionary<int, bool>> _validAreas = new Dictionary<int, Dictionary<int, bool>>();
+        private Thread _backgroundFloorGenerationThread = new Thread(() => {});
+        private FloorCoordinate _entryStaircaseLocation;
+
 
         private DungeonGenerator()
         { 
@@ -107,29 +113,160 @@ namespace Project.Dungeon.Generation
             return Instance;
         }
 
-        public List<List<RoomData>> GetNewFloor()
+        private void GenerateNewFloorBatch()
         {
-            // Loop until the generated floor has 15+ rooms
-            do
+            // Generate a starting coordinate
+            if (this._currentFloorBatch == 0) GenerateStartCoordinate();
+
+            var toInclude = new List<FloorCoordinate> {this._entryStaircaseLocation};
+            for (var floor = this._currentFloorBatch; floor < this._currentFloorBatch + 20; floor++)
             {
                 // Fill the list of RoomPossibilities with new PossibleRooms
-                InitialiseFloorPossibilities();
+                InitialiseFloorPossibilities(floor, toInclude);
                 // Generate a new floor
-                GenerateFloor();
-            } while (!WalkThroughFloor());
+                GenerateFloor(floor);
+                // Ensure the floor is valid
+                WalkThroughFloor(floor, toInclude);
+                // Position staircases on the floor
+                PlaceStaircases(floor);
+
+                // Set the entry location on the floor
+                toInclude.Clear();
+                toInclude.Add(this._entryStaircaseLocation);
+            }
+
             // Convert the result of the generation into usable floor
             ConvertDataToFloor();
-            return this._generatedFloor;
+            // Increase the current batch number for next batch
+            this._currentFloorBatch += 20;
         }
 
-        private bool WalkThroughFloor()
+        private void PlaceStaircases(int floor)
         {
-            // Clear the dictionary
-            this._areas.Clear();
+            // Find the area with the entry location
+            var targetArea = GetTargetArea(this._entryStaircaseLocation);
+            // Set the target distance between the entry and exit staircases
+            var targetDist = 9;
+            var possibleLocations = new List<PossibleRoom>();
+            
+            // Iterate to find possible staircase locations
+            while (possibleLocations.Count == 0)
+            {
+                // Add all rooms in the area that are far enough away
+                possibleLocations.AddRange(targetArea.Where(r =>
+                        r.Location.GetFloor() == this._entryStaircaseLocation.GetFloor() && 
+                        GetDistanceBetween(r.Location, this._entryStaircaseLocation) >= targetDist));
+                // If there are no valid locations then lower the target distance
+                if (possibleLocations.Count == 0) targetDist -= 2;
+                // If the target distance > 0, then there could be more possible locations
+                if (targetDist >= 1) continue;
+                // If there are no possible rooms in the target area for the
+                // staircase, then regenerate the floor and try again
+                RegenerateFloor(floor, new List<FloorCoordinate>() {this._entryStaircaseLocation});
+                targetArea = GetTargetArea(this._entryStaircaseLocation);
+                targetDist = 9;
+            }
+            
+            // Select a random room from the possible locations
+            var rand = this._random.Next(possibleLocations.Count);
+            var location = possibleLocations[rand].Location;
+            var room = this._floorPossibilities.Find( r => r.Location.Equals(location));
+            
+            // Add a staircase down in that room
+            // Down is for progression forwards
+            room.Staircase = Direction.Down;
+            // If not on the first floor, add a staircase to the previous floor
+            if (!this._entryStaircaseLocation.Equals(this._generatedStartCoordinate))
+            {
+                var entryRoom = targetArea.Find(r => r.Location.Equals(this._entryStaircaseLocation));
+                // Up is for returning to previous floors
+                entryRoom.Staircase = Direction.Up;
+            }
+            // Set the entry staircase location for the next floor
+            this._entryStaircaseLocation = new FloorCoordinate(room.Location.GetX(),
+                room.Location.GetY(), room.Location.GetFloor() + 1);
+        }
+
+        private List<PossibleRoom> GetTargetArea(FloorCoordinate location)
+        {
+            var targetArea = new List<PossibleRoom>();
+            
+            // Find the area containing the location provided
+            foreach (var area in this._areas[location.GetFloor()])
+            {
+                var startRoom = area.Value.Find(r => r.Location.Equals(location));
+                if (startRoom == null) continue;
+                targetArea = new List<PossibleRoom>(area.Value);
+                break;
+            }
+            
+            // If the target area is found, return it
+            if (targetArea.Count != 0) return targetArea;
+            
+            // If the target area is not found, regenerate the floor and recursively try again
+            RegenerateFloor(location.GetFloor(), new List<FloorCoordinate>() {this._entryStaircaseLocation});
+            
+            return GetTargetArea(location);
+        }
+
+        private void RegenerateFloor(int floor, List<FloorCoordinate> toInclude = null)
+        {
+            // Remove all PossibleRooms for the floor
+            this._floorPossibilities.RemoveAll(r => r.Location.GetFloor() == floor);
+            for (var col = 0; col < 9; col++)
+            {
+                for (var row = 0; row < 9; row++)
+                {
+                    // Add new PossibleRooms for each invalid floor
+                    this._floorPossibilities.Add(
+                        new PossibleRoom(new FloorCoordinate(col, row, floor)));
+                }
+            }
+
+            // If there are specific locations to include, ensure they cannot have no doors
+            if (toInclude != null)
+            {
+                foreach (var location in toInclude)
+                {
+                    var room = this._floorPossibilities.Find(r => r.Location.Equals(location));
+                    room.RoomPossibilities.RemoveAll(r => r.PossibleRoomType == PossibleRoomType.Zero);
+                }
+            }
+
+            // Regenerate the invalid floor
+            GenerateFloor(floor);
+            WalkThroughFloor(floor, toInclude);
+        }
+
+        private void GenerateStartCoordinate()
+        {
+            // Generate a random coordinate and set it as the start coordinate and entry point
+            var startCoordinate = new FloorCoordinate(this._random.Next(9),
+                this._random.Next(9), 0);
+            this._generatedStartCoordinate = startCoordinate;
+            this._entryStaircaseLocation = startCoordinate;
+        }
+
+        private int GetDistanceBetween(FloorCoordinate one, FloorCoordinate two)
+        {
+            // Find the distance between the rooms in terms of coordinates
+            var xDist = Math.Abs(one.GetX() - two.GetX());
+            var yDist = Math.Abs(one.GetY() - two.GetY());
+            return xDist + yDist;
+        }
+
+        private void WalkThroughFloor(int floor, List<FloorCoordinate> toInclude)
+        {
+            // Remove any existing entries for this batch/floor
+            if (this._areas.Keys.Count > this._currentFloorBatch + 20) this._areas.Clear();
+            if (this._areas.Keys.Contains(floor)) this._areas.Remove(floor);
+            // Add an entry for this floor
+            this._areas.Add(floor, new Dictionary<int, List<PossibleRoom>>());
+            
             var checkedRooms = new List<PossibleRoom>();
-            var currentIndex = 0;
+            var currentIndex = new Dictionary<int, int>();
             // Loop over each room
-            foreach (var room in this._floorPossibilities)
+            foreach (var room in this._floorPossibilities.Where(r => r.Location.GetFloor() == floor))
             {
                 // If the room has already been checked, skip this iteration
                 if (checkedRooms.Contains(room)) continue;
@@ -153,8 +290,10 @@ namespace Project.Dungeon.Generation
                     if (checkedRooms.Contains(nextRoom)) continue;
                     // Add the room to it's area in the dictionary, or a new one if
                     // it's the first room in this area so far
-                    if (this._areas.Keys.Contains(currentIndex)) this._areas[currentIndex].Add(nextRoom);
-                    else this._areas[currentIndex] = new List<PossibleRoom>() {nextRoom};
+                    if (!currentIndex.Keys.Contains(room.Location.GetFloor())) currentIndex.Add(room.Location.GetFloor(), 0);
+                    if (this._areas[nextRoom.Location.GetFloor()].Keys.Contains(currentIndex[room.Location.GetFloor()]))
+                        this._areas[nextRoom.Location.GetFloor()][currentIndex[room.Location.GetFloor()]].Add(nextRoom);
+                    else this._areas[nextRoom.Location.GetFloor()][currentIndex[room.Location.GetFloor()]] = new List<PossibleRoom>() {nextRoom};
                     checkedRooms.Add(nextRoom);
                     // Get this room's representation in RoomData
                     var roomData = nextRoom.ToRoomData();
@@ -165,7 +304,8 @@ namespace Project.Dungeon.Generation
                     {
                         adjacentRoom = this._floorPossibilities.Find(r =>
                             r.Location.GetX() == nextRoom.Location.GetX() - 1 &&
-                            r.Location.GetY() == nextRoom.Location.GetY());
+                            r.Location.GetY() == nextRoom.Location.GetY() &&
+                            r.Location.GetFloor() == nextRoom.Location.GetFloor());
                         if (adjacentRoom != null)
                         {
                             if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
@@ -177,7 +317,8 @@ namespace Project.Dungeon.Generation
                     {
                         adjacentRoom = this._floorPossibilities.Find(r =>
                             r.Location.GetX() == nextRoom.Location.GetX() &&
-                            r.Location.GetY() == nextRoom.Location.GetY() + 1);
+                            r.Location.GetY() == nextRoom.Location.GetY() + 1 &&
+                            r.Location.GetFloor() == nextRoom.Location.GetFloor());
                         if (adjacentRoom != null)
                         {
                             if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
@@ -189,7 +330,8 @@ namespace Project.Dungeon.Generation
                     {
                         adjacentRoom = this._floorPossibilities.Find(r =>
                             r.Location.GetX() == nextRoom.Location.GetX() + 1 &&
-                            r.Location.GetY() == nextRoom.Location.GetY());
+                            r.Location.GetY() == nextRoom.Location.GetY() &&
+                            r.Location.GetFloor() == nextRoom.Location.GetFloor());
                         if (adjacentRoom != null)
                         {
                             if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
@@ -201,7 +343,8 @@ namespace Project.Dungeon.Generation
                     {
                         adjacentRoom = this._floorPossibilities.Find(r =>
                             r.Location.GetX() == nextRoom.Location.GetX() &&
-                            r.Location.GetY() == nextRoom.Location.GetY() - 1);
+                            r.Location.GetY() == nextRoom.Location.GetY() - 1 &&
+                            r.Location.GetFloor() == nextRoom.Location.GetFloor());
                         if (adjacentRoom != null)
                         {
                             if (!checkedRooms.Contains(adjacentRoom)) toCheck.Push(adjacentRoom);
@@ -210,101 +353,134 @@ namespace Project.Dungeon.Generation
                 } while (toCheck.Count > 0);
                 // When all rooms in that area have been added to
                 // the dictionary, increment the current index
-                currentIndex++;
+                currentIndex[room.Location.GetFloor()]++;
             }
 
-            // Clear the dictionary
-            this._validAreas.Clear();
-            // Iterate once for each area
-            for (var k = 0; k < this._areas.Count; k++)
+            // Remove any existing entries for this batch/floor
+            if (this._validAreas.Keys.Count > this._currentFloorBatch + 20) this._validAreas.Clear();
+            if (this._validAreas.Keys.Contains(floor)) this._validAreas.Remove(floor);
+            // Add an entry for this floor
+            this._validAreas.Add(floor, new Dictionary<int, bool>());
+            // Iterate once for each floor
+            // Iterate for each area in the floor
+            for (var k = 0; k < this._areas[floor].Count; k++)
             {
                 // If the area has 15 or more rooms in it, it is valid,
                 // otherwise, it is not valid
-                if (this._areas[k].Count >= 15) this._validAreas[k] = true;
-                else this._validAreas[k] = false;
+                if (this._areas[floor][k].Count >= 15) this._validAreas[floor][k] = true;
+                else this._validAreas[floor][k] = false;
             }
 
-            // Return true if there are any valid areas
-            return this._validAreas.Any(kv => kv.Value);
+            // If there are no specific rooms to include, then return
+            // true if there are any valid areas
+            if (toInclude == null || toInclude.Count == 0)
+            {
+                if (this._validAreas[floor].Values.Any(v => v)) return;
+            }
+            else
+            {
+                // If specific rooms should be included, return true only if all of them are in a valid area
+                var allValid = true;
+                foreach (var location in toInclude)
+                {
+                    var requiredArea = -1;
+                    foreach (var area in this._areas[floor].Where(area =>
+                                 area.Value.Find(r => r.Location.Equals(location)) != null))
+                    {
+                        requiredArea = area.Key;
+                        break;
+                    }
+
+                    if (requiredArea == -1 || this._validAreas[floor][requiredArea] is false) allValid = false;
+                }
+
+                if (allValid) return;
+            }
+
+            // If the floor is not valid, regenerate it
+            RegenerateFloor(floor, toInclude);
         }
 
-        private void InitialiseFloorPossibilities()
+        private void InitialiseFloorPossibilities(int floor, List<FloorCoordinate> toInclude = null)
         {
-            // Empty the list
-            this._floorPossibilities.Clear();
-            // Fill the list with new PossibleRooms, one for each coordinate of the floor
+            if (floor == this._currentFloorBatch) this._floorPossibilities.Clear();
+            
+            // Fill the list with new PossibleRooms, one for each coordinate of each floor
             for (var col = 0; col < 9; col++)
             {
                 for (var row = 0; row < 9; row++)
                 {
-                    this._floorPossibilities.Add(new PossibleRoom(new FloorCoordinate(col, row)));
+                    this._floorPossibilities.Add(
+                        new PossibleRoom(new FloorCoordinate(col, row, floor)));
                 }
+            }
+
+            if (toInclude is null) return;
+            // If there are specific locations to include, ensure they cannot have no doors
+            foreach (var location in toInclude)
+            {
+                var room = this._floorPossibilities.Find(r => r.Location.Equals(location));
+                room.RoomPossibilities.RemoveAll(r => r.PossibleRoomType == PossibleRoomType.Zero);
             }
         }
 
         private void ConvertDataToFloor()
         {
-            // Empty the list
-            this._generatedFloor.Clear();
-            for (var col = 0; col < 9; col++)
+            // Iterate for each floor in this batch
+            for (var floor = this._currentFloorBatch; floor < this._currentFloorBatch + 20; floor++)
             {
-                this._generatedFloor.Add(new List<RoomData>());
-                for (var row = 0; row < 9; row++)
+                // Add a new floor to the dungeon
+                this._generatedDungeon[floor] = new List<List<RoomData>>();
+                for (var col = 0; col < 9; col++)
                 {
-                    // Find the PossibleRoom representing this location and get the RoomData representing it
-                    var roomChoice = this._floorPossibilities.Find(r => 
-                        r.Location.GetX() == col && r.Location.GetY() == row);
-                    var roomData = roomChoice.ToRoomData();
-                    // Add the RoomData to it's position in the floor
-                    this._generatedFloor[col].Add(roomData);
-                }
-            }
-
-            var possibleStartCoordinates = new List<FloorCoordinate>();
-            foreach (var kv in this._validAreas)
-            {
-                foreach (var room in this._areas[kv.Key])
-                {
-                    if (kv.Value == false)
-                        this._generatedFloor[room.Location.GetX()][room.Location.GetY()] = new RoomData(null);
-                    else
-                        possibleStartCoordinates.Add(new FloorCoordinate(room.Location.GetX(), room.Location.GetY()));
+                    // Add each column to the floor
+                    this._generatedDungeon[floor].Add(new List<RoomData>());
+                    for (var row = 0; row < 9; row++)
+                    {
+                        // Find the PossibleRoom representing this location and get the RoomData representing it
+                        var roomChoice = this._floorPossibilities.Find(r => 
+                            r.Location.GetX() == col && r.Location.GetY() == row && r.Location.GetFloor() == floor);
+                        var roomData = roomChoice.ToRoomData();
+                        // Add the RoomData to it's position in the dungeon
+                        this._generatedDungeon[floor][col].Add(roomData);
+                    }
                 }
             }
             
-            // Choose the start room from the list
-            this._generatedStartCoordinate = possibleStartCoordinates[this._random.Next(possibleStartCoordinates.Count)];
+            // Iterate for each floor in this batch
+            for (var floor = this._currentFloorBatch; floor < this._currentFloorBatch + 20; floor++)
+            {
+                foreach (var kv in this._validAreas[floor])
+                {
+                    foreach (var room in this._areas[floor][kv.Key].Where(room => kv.Value == false))
+                    {
+                        this._generatedDungeon[room.Location.GetFloor()][room.Location.GetX()][room.Location.GetY()] = new RoomData(null);
+                    }
+                }
+            }
         }
 
-        private void GenerateFloor()
+        private void GenerateFloor(int floor)
         {
-            // Loop until the floor has been fully generated
+            // Loop until every floor has been fully generated
             bool done;
             do
             {
                 // Get the room with the lowest "entropy"
-                var room = PickLowestEntropyPossibleRoom();
+                var room = PickLowestEntropyPossibleRoom(floor);
                 // Collapse that room and propagate
                 CollapseFromRoom(room);
-                // Check if every room in the floor has been determined
-                done = true;
-                foreach (var possible in this._floorPossibilities)
-                {
-                    if (possible.Determined == false)
-                    {
-                        done = false;
-                        break;
-                    }
-                }
+                // Check if every room on the floor has been determined
+                done = this._floorPossibilities.Where(r => r.Location.GetFloor() == floor).All(possible => possible.Determined);
             } while (!done);
         }
 
-        private PossibleRoom PickLowestEntropyPossibleRoom()
+        private PossibleRoom PickLowestEntropyPossibleRoom(int floor)
         {
             var lowestEntropyRooms = new List<PossibleRoom>();
             var lowestEntropyValue = 999;
-            // Iterate over all PossibleRooms
-            foreach (var possibleRoom in this._floorPossibilities)
+            // Iterate over all PossibleRooms on the floor
+            foreach (var possibleRoom in this._floorPossibilities.Where(r => r.Location.GetFloor() == floor))
             {
                 if (possibleRoom.RoomPossibilities.Count < lowestEntropyValue && possibleRoom.RoomPossibilities.Count != 1)
                 {
@@ -340,6 +516,7 @@ namespace Project.Dungeon.Generation
         {
             // If the room is not the initial room and is already determined, return
             if (origin != null && room.Determined) return;
+            
             var possibilitiesChanged = false;
             // If this is not the initial room, we need to check to see if the possible states can be narrowed down
             if (origin != null)
@@ -533,13 +710,15 @@ namespace Project.Dungeon.Generation
 
             // Create a stack made up of all of the adjacent rooms
             var toPropagate = new Stack<Tuple<PossibleRoom, Direction>>();
+
             // If along the west edge of the map, do not check for the room to the west
             if (room.Location.GetX() != 0 && originDir != Direction.West)
             {
                 // West Room
                 var nextRoom = this._floorPossibilities.Find(r =>
                     r.Location.GetX() == room.Location.GetX() - 1 &&
-                    r.Location.GetY() == room.Location.GetY());
+                    r.Location.GetY() == room.Location.GetY() &&
+                    r.Location.GetFloor() == room.Location.GetFloor());
                 // Create a tuple of the adjacent room and the direction pointing to this room from it
                 var nextRoomData = new Tuple<PossibleRoom, Direction>(nextRoom, Direction.East);
                 // Push the adjacent room to the stack
@@ -551,7 +730,8 @@ namespace Project.Dungeon.Generation
                 // South Room
                 var nextRoom = this._floorPossibilities.Find(r =>
                     r.Location.GetX() == room.Location.GetX() &&
-                    r.Location.GetY() == room.Location.GetY() + 1);
+                    r.Location.GetY() == room.Location.GetY() + 1 &&
+                    r.Location.GetFloor() == room.Location.GetFloor());
                 // Create a tuple of the adjacent room and the direction pointing to this room from it
                 var nextRoomData = new Tuple<PossibleRoom, Direction>(nextRoom, Direction.North);
                 // Push the adjacent room to the stack
@@ -563,7 +743,8 @@ namespace Project.Dungeon.Generation
                 // East Room
                 var nextRoom = this._floorPossibilities.Find(r =>
                     r.Location.GetX() == room.Location.GetX() + 1 &&
-                    r.Location.GetY() == room.Location.GetY());
+                    r.Location.GetY() == room.Location.GetY() &&
+                    r.Location.GetFloor() == room.Location.GetFloor());
                 // Create a tuple of the adjacent room and the direction pointing to this room from it
                 var nextRoomData = new Tuple<PossibleRoom, Direction>(nextRoom, Direction.West);
                 // Push the adjacent room to the stack
@@ -575,7 +756,8 @@ namespace Project.Dungeon.Generation
                 // North Room
                 var nextRoom = this._floorPossibilities.Find(r =>
                     r.Location.GetX() == room.Location.GetX() &&
-                    r.Location.GetY() == room.Location.GetY() - 1);
+                    r.Location.GetY() == room.Location.GetY() - 1 &&
+                    r.Location.GetFloor() == room.Location.GetFloor());
                 // Create a tuple of the adjacent room and the direction pointing to this room from it
                 var nextRoomData = new Tuple<PossibleRoom, Direction>(nextRoom, Direction.South);
                 // Push the adjacent room to the stack
@@ -602,6 +784,45 @@ namespace Project.Dungeon.Generation
         {
             // Get the generated floor's start location
             return this._generatedStartCoordinate;
+        }
+
+        public List<List<RoomData>> GetFloor(int floorNumber)
+        {
+            // If no floors exist, generate the first batch
+            if (floorNumber - 1 == 0 && this._generatedDungeon.Count == 0) GenerateNewFloorBatch();
+            // If the player is within 10 floors of the current highest floor and floors are not currently
+            // being generated, generate a new batch in another thread
+            if (DungeonManager.GetInstance().GetCurrentFloorNumber() + 10 >= this._generatedDungeon.Keys.Max() &&
+                !this._backgroundFloorGenerationThread.IsAlive) StartBackgroundRoomGenerationThread();
+            // Return the requested floor if it exists
+            return this._generatedDungeon.Keys.Contains(floorNumber-1) ? this._generatedDungeon[floorNumber-1] : null;
+        }
+
+        private void StartBackgroundRoomGenerationThread()
+        {
+            // Create a new thread which will generate new floor batches until there are
+            // at least 20 unexplored floors
+            this._backgroundFloorGenerationThread = new Thread(() =>
+            {
+                while (DungeonManager.GetInstance().GetCurrentDungeonId() == DungeonId.RandomDungeon)
+                {
+                    if (DungeonManager.GetInstance().GetCurrentFloorNumber() + 20 >= this._generatedDungeon.Keys.Max())
+                    {
+                        GenerateNewFloorBatch();
+                    }
+                    else break;
+                }
+            });
+            // Start the thread
+            this._backgroundFloorGenerationThread.Start();
+        }
+
+        public void ClearDungeon()
+        {
+            // Reset everything necessary for dungeon generation
+            this._generatedDungeon.Clear();
+            this._generatedStartCoordinate = null;
+            this._currentFloorBatch = 0;
         }
     }
 }

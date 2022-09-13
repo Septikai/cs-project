@@ -53,6 +53,7 @@
     <Compile Include="Dungeon\Blockers\Door.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Dungeon\Blockers\Staircase.cs" />
     <Compile Include="Dungeon\Dungeons\Cavern.cs" />
     <Compile Include="Dungeon\Dungeons\DungeonID.cs" />
     <Compile Include="Dungeon\Dungeons\DungeonTemplate.cs" />
@@ -63,6 +64,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Dungeon\DungeonManager.cs" />
+    <Compile Include="Dungeon\Dungeons\Temple.cs" />
     <Compile Include="Dungeon\Entities\Entity.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -148,6 +150,9 @@
     <Content Include="obj\Debug\Project.exe" />
     <Content Include="obj\Debug\Project.pdb" />
     <Content Include="obj\Debug\Project.Properties.Resources.resources" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\Room" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

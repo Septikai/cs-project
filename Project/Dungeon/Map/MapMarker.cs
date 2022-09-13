@@ -8,7 +8,8 @@ namespace Project.Dungeon.Map
         public MapMarker()
         {
             // Create a MapMarker
-            this.BackColor = Color.Khaki;
+            this.SizeMode = PictureBoxSizeMode.Zoom;
+            this.BackColor = Color.White;
         }
 
         public void RemoveFromParent()

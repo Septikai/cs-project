@@ -20,7 +20,36 @@ namespace Project.Dungeon.Dungeons
         public List<List<RoomData>> FloorEight;
         public List<List<RoomData>> FloorNine;
         public List<List<RoomData>> FloorTen;
-        
+
+        public List<List<RoomData>> GetFloor(int floorNumber)
+        {
+            // Return the requested floor
+            switch (floorNumber)
+            {
+                case 1:
+                    return FloorOne;
+                case 2:
+                    return FloorTwo;
+                case 3:
+                    return FloorThree;
+                case 4:
+                    return FloorFour;
+                case 5:
+                    return FloorFive;
+                case 6:
+                    return FloorSix;
+                case 7:
+                    return FloorSeven;
+                case 8:
+                    return FloorEight;
+                case 9:
+                    return FloorNine;
+                case 10:
+                    return FloorTen;
+            }
+
+            return null;
+        }
 
         protected DungeonTemplate()
         {

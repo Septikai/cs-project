@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Project.Util;
 
 namespace Project.Dungeon.Generation
@@ -9,6 +8,7 @@ namespace Project.Dungeon.Generation
         public readonly List<PossibleRoomChoice> RoomPossibilities = new List<PossibleRoomChoice>();
         public bool Determined;
         public PossibleRoomChoice RoomChoice;
+        public Direction Staircase = Direction.NullDirection;
         public readonly FloorCoordinate Location;
 
         public PossibleRoom(FloorCoordinate location)
@@ -207,7 +207,7 @@ namespace Project.Dungeon.Generation
                     doorDirections = null;
                     break;
             }
-            return new RoomData(doorDirections);
+            return new RoomData(doorDirections, this.Staircase);
         }
     }
 }

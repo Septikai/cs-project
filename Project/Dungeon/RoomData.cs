@@ -12,7 +12,7 @@ namespace Project.Dungeon
         public readonly bool SouthDoor;
         public readonly bool WestDoor;
         public readonly List<Direction> DoorLocations;
-        public readonly Direction StaircaseDirection;
+        public readonly Direction StaircaseDirection = Direction.NullDirection;
 
         public RoomData(List<Direction> doorLocations, Direction staircaseDirection = Direction.NullDirection)
         {

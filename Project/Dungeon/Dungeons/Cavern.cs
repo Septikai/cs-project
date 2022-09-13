@@ -9,8 +9,9 @@ namespace Project.Dungeon.Dungeons
         
         private Cavern()
         {
+            // Create the Cavern instance
             this.DungeonId = DungeonId.Cavern;
-            this.FloorCount = 2;
+            this.FloorCount = 5;
             this.StartCoordinate = new FloorCoordinate(7, 2);
             this.StaircaseDirection = Direction.Down;
             this.FloorOne = GenerateFloorOne();

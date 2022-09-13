@@ -3,7 +3,7 @@
     public class PlayerStats
     {
         private static readonly PlayerStats Instance = new PlayerStats();
-        private int _speed = 6;
+        private int _speed = 12;
 
         private PlayerStats()
         {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 using Project.Dungeon.Blockers;
 using Project.Dungeon.Entities;
@@ -17,6 +16,7 @@ namespace Project.Dungeon.Rooms
         private readonly List<Door> _doors = new List<Door>();
         private int _smallerSize;
         private readonly List<Direction> _doorLocations = new List<Direction>();
+        private Staircase _staircase;
 
         public Room(Direction entryDirection)
         {
@@ -94,6 +94,13 @@ namespace Project.Dungeon.Rooms
                 this.Controls.Add(wall);
                 this._doors.Add(door);
                 door.BringToFront();
+
+                // Add a staircase
+                this._staircase = new Staircase();
+                this._staircase.Size = new Size(this._smallerSize * 3, this._smallerSize * 3);
+                this._staircase.Location = new Point(
+                    this.Width / 2 - this._staircase.Width / 2,
+                    this.Height / 2 - this._staircase.Height / 2);
             }
         }
 
@@ -163,6 +170,12 @@ namespace Project.Dungeon.Rooms
                         break;
                 }
             }
+
+            // Reposition the staircase
+            this._staircase.Size = new Size(this._smallerSize * 3, this._smallerSize * 3);
+            this._staircase.Location = new Point(
+                this.Width / 2 - this._staircase.Width / 2,
+                this.Height / 2 - this._staircase.Height / 2);
         }
 
         public void LoadRoomData(RoomData roomData)
@@ -189,9 +202,18 @@ namespace Project.Dungeon.Rooms
                     if (this.Controls.Contains(door)) this.Controls.Remove(door);
                 }
             }
+
+            // If the staircase should be in the room, add it to controls and set it's image
+            // Otherwise, remove it from controls
+            if (roomData.StaircaseDirection != Direction.NullDirection)
+            {
+                this._staircase.SetImage(roomData.StaircaseDirection);
+                this.Controls.Add(this._staircase);
+            }
+            else if (this.Controls.Contains(this._staircase)) this.Controls.Remove(this._staircase);
         }
 
-        public void EnterRoom(Direction entryPoint = Direction.Centre)
+        public void EnterRoom(Direction entryPoint = Direction.Centre, Direction entryDirection = Direction.NullDirection)
         {
             // Called upon entering the room in order to set it up
             //
@@ -228,6 +250,22 @@ namespace Project.Dungeon.Rooms
                         this.Bounds.Width / 2 - this._player.Width / 2,
                         this.Bounds.Height / 2 - this._player.Height / 2
                         );
+                    // Determine which side of the staircase the player should be placed
+                    switch (entryDirection)
+                    {
+                        case Direction.North:
+                            this._player.Top = this._staircase.Top - this._player.Height - this._smallerSize / 2;
+                            break;
+                        case Direction.East:
+                            this._player.Left = this._staircase.Right + this._smallerSize / 2;
+                            break;
+                        case Direction.South:
+                            this._player.Top = this._staircase.Bottom + this._smallerSize / 2;
+                            break;
+                        case Direction.West:
+                            this._player.Left = this._staircase.Left - this._player.Width - this._smallerSize / 2;
+                            break;
+                    }
                     break;
             }
         }
@@ -245,13 +283,22 @@ namespace Project.Dungeon.Rooms
             {
                 blockers.Add(door);
             }
+            
+            if (this.Controls.Contains(this._staircase)) blockers.Add(this._staircase);
 
             return blockers;
         }
 
         public List<Door> GetDoors()
         {
+            // Return the list of doors
             return this._doors;
+        }
+
+        public Staircase GetStaircase()
+        {
+            // Return the staircase
+            return this._staircase;
         }
     }
 }

@@ -24,21 +24,40 @@ namespace Project.Dungeon.Entities
         {
             // Method name is self explanatory
             // Takes an X velocity and a Y velocity, each are either 0 or pos/negative 1, and moves in that direction
+            Direction dir;
             this.Left += xVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
+            dir = xVel == 1 ? Direction.East : Direction.West;
+            var xStaircaseFound = CheckForStaircase(room, dir);
             var xDoorFound = CheckForDoor(room);
-            if (xDoorFound) return true;
+            if (xStaircaseFound || xDoorFound) return true;
             var validMoveX = CheckX(xVel, room.GetBlockers());
 
             this.Top += yVel * (this._isPlayer ? PlayerStats.GetInstance().GetSpeed() : this._speed);
+            dir = yVel == 1 ? Direction.South : Direction.North;
+            var yStaircaseFound = CheckForStaircase(room, dir);
             var yDoorFound = CheckForDoor(room);
-            if (yDoorFound) return true;
+            if (yStaircaseFound || yDoorFound) return true;
             var validMoveY = CheckY(yVel, room.GetBlockers());
             RoomView.GetInstance().GetRoom().Invalidate();
             return validMoveX && validMoveY;
         }
 
+        private bool CheckForStaircase(Room room, Direction entryDir)
+        {
+            // If the player is touching a staircase, climb it
+            var staircase = room.GetStaircase();
+            if (room.Controls.Contains(staircase) && this.Bounds.IntersectsWith(staircase.Bounds))
+            {
+                staircase.Climb(entryDir);
+                return true;
+            }
+
+            return false;
+        }
+
         private bool CheckForDoor(Room room)
         {
+            // If the player is touching a door, move through it
             var doors = room.GetDoors();
             foreach (var door in doors)
             {

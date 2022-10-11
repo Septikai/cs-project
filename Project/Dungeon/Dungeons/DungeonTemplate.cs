@@ -56,6 +56,21 @@ namespace Project.Dungeon.Dungeons
             
         }
 
+        public void ResetFloors()
+        {
+            // Reset all dungeon floors
+            this.FloorOne = GenerateFloorOne();
+            this.FloorTwo = GenerateFloorTwo();
+            this.FloorThree = GenerateFloorThree();
+            this.FloorFour = GenerateFloorFour();
+            this.FloorFive = GenerateFloorFive();
+            this.FloorSix = GenerateFloorSix();
+            this.FloorSeven = GenerateFloorSeven();
+            this.FloorEight = GenerateFloorEight();
+            this.FloorNine = GenerateFloorNine();
+            this.FloorTen = GenerateFloorTen();
+        }
+
         protected abstract List<List<RoomData>> GenerateFloorOne();
         protected virtual List<List<RoomData>> GenerateFloorTwo()
         {

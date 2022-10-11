@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Project.Dungeon.Blockers;
 using Project.Dungeon.Dungeons;
 using Project.Dungeon.Generation;
 using Project.Dungeon.Map;
@@ -50,6 +49,7 @@ namespace Project.Dungeon
             if (dungeonId == DungeonId.NullDungeon)
             {
                 // Set everything to null
+                this._currentDungeon.ResetFloors();
                 this._currentDungeon = null;
                 this._currentCoordinate = null;
                 this._currentFloor = null;
@@ -58,6 +58,7 @@ namespace Project.Dungeon
                 DungeonGenerator.GetInstance().ClearDungeon();
                 RoomView.GetInstance().SetRoom(null);
                 MapBackground.GetInstance().ClearMap();
+                PlayerStats.GetInstance().HealPlayer(20);
                 return;
             }
             if (dungeonId == DungeonId.RandomDungeon)

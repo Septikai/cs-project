@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using Project.Combat;
 using Project.Dungeon;
 using Project.Dungeon.Dungeons;
 using Project.Util;
@@ -91,6 +92,7 @@ namespace Project.Menu
             if (BaseForm.GetInstance().GetCurrentView() != Instance) return;
             // Return to the Main menu
             DungeonManager.GetInstance().SelectDungeon(DungeonId.NullDungeon);
+            if (CombatManager.GetInstance().IsInCombat()) CombatManager.GetInstance().EndCombat();
             BaseForm.GetInstance().SwitchView(Main.GetInstance());
         }
     }

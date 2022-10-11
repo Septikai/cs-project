@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Timers;
 using System.Windows.Forms;
+using Project.Combat;
 using Project.Dungeon;
 using Project.Dungeon.Entities;
 using Project.Dungeon.Map;
@@ -19,6 +20,8 @@ namespace Project
         private static readonly ModeSelect ModeSelectInstance = ModeSelect.GetInstance();
         private static readonly Pause PauseMenuInstance = Pause.GetInstance();
         private static readonly RoomView RoomViewInstance = RoomView.GetInstance();
+        private static readonly CombatView CombatViewInstance = CombatView.GetInstance();
+        private static readonly Death DeathScreenInstance = Death.GetInstance();
         private static readonly GameTracker GameTrackerInstance = GameTracker.GetInstance();
         private static View _currentView;
         private static View _previousViewInstance;
@@ -50,6 +53,10 @@ namespace Project
             ViewList.Add(PauseMenuInstance);
             this.Controls.Add(RoomViewInstance);
             ViewList.Add(RoomViewInstance);
+            this.Controls.Add(CombatViewInstance);
+            ViewList.Add(CombatViewInstance);
+            this.Controls.Add(DeathScreenInstance);
+            ViewList.Add(DeathScreenInstance);
             
             _currentView = MainMenuInstance;
         }
@@ -62,6 +69,7 @@ namespace Project
             MainMenuInstance.Initialise();
             ModeSelectInstance.Initialise();
             PauseMenuInstance.Initialise();
+            DeathScreenInstance.Initialise();
         }
 
         private void SetComponentSizes()
@@ -75,6 +83,10 @@ namespace Project
             PauseMenuInstance.ResizeComponents();
             RoomViewInstance.Size = this.Size;
             RoomViewInstance.ResizeComponents();
+            CombatViewInstance.Size = this.Size;
+            CombatViewInstance.ResizeComponents();
+            DeathScreenInstance.Size = this.Size;
+            DeathScreenInstance.ResizeComponents();
         }
 
         public void SwitchView(View view)

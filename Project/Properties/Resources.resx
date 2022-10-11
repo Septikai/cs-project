@@ -139,4 +139,55 @@
   <data name="stairs_marker" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Assets\Map\Markers\stairs_marker.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="attack_selector" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\attack_selector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="move_selector" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\move_selector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="heal_selector" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\heal_selector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="empty_card_pile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\empty_card_pile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="deck_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\deck_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="deck_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\deck_2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="deck_3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\deck_3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hand_to_hand_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\hand_to_hand.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="clandestine_strike_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\clandestine_strike.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fireball_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\fireball.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fleeting_gift_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\fleeting_gift.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="healing_potion_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\healing_potion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="marksman_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\marksman.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="twin_shields_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\twin_shields.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="syntax_error_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\syntax_error.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="spleong_rrero_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\spleong_rrero.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="void_orb_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Combat\Cards\void_orb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

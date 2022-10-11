@@ -60,6 +60,11 @@ namespace Project.Util
             if (key == Keys.Escape) SetPauseKeyHeld(false);
         }
 
+        public void ClearHeldKeys()
+        {
+            this._heldKeys.Clear();
+        }
+
         public List<Keys> GetHeldKeys()
         {
             // Fetch the list of held keys

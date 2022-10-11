@@ -50,6 +50,18 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BaseForm.Designer.cs" />
+    <Compile Include="Combat\Card.cs" />
+    <Compile Include="Combat\CardManager.cs" />
+    <Compile Include="Combat\CombatManager.cs" />
+    <Compile Include="Combat\CombatView.cs" />
+    <Compile Include="Combat\Display\CombatGrid.cs" />
+    <Compile Include="Combat\Display\Grid\Enemy\GridSkeleton.cs" />
+    <Compile Include="Combat\Display\Grid\GridEnemy.cs" />
+    <Compile Include="Combat\Display\Grid\GridEntity.cs" />
+    <Compile Include="Combat\Display\Grid\GridPlayer.cs" />
+    <Compile Include="Combat\Display\Hand.cs" />
+    <Compile Include="Combat\Display\MainHealthBar.cs" />
+    <Compile Include="Combat\Display\SideDisplay.cs" />
     <Compile Include="Dungeon\Blockers\Door.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -84,6 +96,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Dungeon\RoomView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Menu\Death.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Menu\Main.cs">
@@ -138,6 +153,23 @@
     <None Include="Assets\Map\Rooms\room_two_corner.png" />
     <None Include="Assets\Map\Rooms\room_two_line.png" />
     <None Include="Assets\Map\Markers\stairs_marker.png" />
+    <Content Include="Assets\Combat\attack_selector.png" />
+    <Content Include="Assets\Combat\Cards\clandestine_strike.png" />
+    <Content Include="Assets\Combat\Cards\fireball.png" />
+    <Content Include="Assets\Combat\Cards\fleeting_gift.png" />
+    <Content Include="Assets\Combat\Cards\hand_to_hand.png" />
+    <Content Include="Assets\Combat\Cards\healing_potion.png" />
+    <Content Include="Assets\Combat\Cards\marksman.png" />
+    <Content Include="Assets\Combat\Cards\spleong_rrero.png" />
+    <Content Include="Assets\Combat\Cards\syntax_error.png" />
+    <Content Include="Assets\Combat\Cards\twin_shields.png" />
+    <Content Include="Assets\Combat\Cards\void_orb.png" />
+    <Content Include="Assets\Combat\deck_1.png" />
+    <Content Include="Assets\Combat\deck_2.png" />
+    <Content Include="Assets\Combat\deck_3.png" />
+    <Content Include="Assets\Combat\empty_card_pile.png" />
+    <Content Include="Assets\Combat\heal_selector.png" />
+    <Content Include="Assets\Combat\move_selector.png" />
     <Content Include="Assets\Map\Rooms\room_zero.png" />
     <Content Include="bin\Debug\Project.exe" />
     <Content Include="bin\Debug\Project.pdb" />

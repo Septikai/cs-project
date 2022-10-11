@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using Project.Combat;
 using Project.Dungeon.Rooms;
 using Project.Util;
 
@@ -62,6 +63,10 @@ namespace Project.Dungeon.Blockers
             // Change the room to represent the new room
             var newRoomData = DungeonManager.GetInstance().GetRoomData(DungeonManager.GetInstance().GetCurrentFloor(), coordinate);
             room.LoadRoomData(newRoomData);
+
+            // Check for combat while moving between rooms
+            if (!newRoomData.Explored) CombatManager.GetInstance().CheckForEncounter();
+            
             // Set the new coordinates
             DungeonManager.GetInstance().SetCurrentCoordinate(coordinate);
             // Position the player in the new room

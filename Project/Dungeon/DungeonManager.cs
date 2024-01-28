@@ -49,8 +49,11 @@ namespace Project.Dungeon
             if (dungeonId == DungeonId.NullDungeon)
             {
                 // Set everything to null
-                this._currentDungeon.ResetFloors();
-                this._currentDungeon = null;
+                if (this._currentDungeon != null)
+                {
+                    this._currentDungeon.ResetFloors();
+                    this._currentDungeon = null;
+                }
                 this._currentCoordinate = null;
                 this._currentFloor = null;
                 this._currentRoom = null;
